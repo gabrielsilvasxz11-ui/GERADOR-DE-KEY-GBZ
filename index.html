@@ -1,27 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Gerador de Keys</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:#000;
+  color:#fff;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+
+/* LOGIN */
+#login{
+  text-align:center;
+  background:#111;
+  padding:30px;
+  border-radius:15px;
+  box-shadow:0 0 20px red;
+}
+
+input{
+  width:200px;
+  padding:10px;
+  margin:8px;
+  border:none;
+  border-radius:5px;
+}
+
+button{
+  padding:10px 20px;
+  margin:5px;
+  border:none;
+  background:red;
+  color:white;
+  border-radius:5px;
+  cursor:pointer;
+}
+
+/* PANEL */
+#panel{
+  display:none;
+  text-align:center;
+  background:#111;
+  padding:30px;
+  border-radius:15px;
+  box-shadow:0 0 20px red;
+}
+
+.keyBox{
+  margin-top:15px;
+  background:#1a1a1a;
+  padding:10px;
+  border-radius:10px;
+  font-weight:bold;
+}
+
+.logout{
+  margin-top:15px;
+  background:#444;
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <h2>Login</h2>
+  <input id="user" placeholder="Usuário"><br>
+  <input id="pass" type="password" placeholder="Senha"><br>
+  <button onclick="login()">Entrar</button>
+</div>
+
+<!-- PAINEL -->
+<div id="panel">
+  <h2>Gerador de Keys</h2>
+
+  <button onclick="gerar(1)">1 Dia</button>
+  <button onclick="gerar(7)">7 Dias</button>
+  <button onclick="gerar(20)">20 Dias</button>
+  <button onclick="gerar(50)">50 Dias</button>
+
+  <div class="keyBox" id="resultado">Nenhuma key gerada</div>
+
+  <button class="logout" onclick="logout()">Sair</button>
+</div>
+
 <script>
 
 /* AUTO LOGIN */
 if(localStorage.getItem("logado") === "true"){
-  document.getElementById("login").style.display="none";
-  document.getElementById("panel").style.display="block";
+  mostrarPainel();
 }
 
 /* LOGIN */
 function login(){
-  let u = document.getElementById("user").value;
-  let p = document.getElementById("pass").value;
+  var u = document.getElementById("user").value;
+  var p = document.getElementById("pass").value;
 
   if(u === "gabriel-12" && p === "040612"){
     localStorage.setItem("logado","true");
-
-    document.getElementById("login").style.display="none";
-    document.getElementById("panel").style.display="block";
+    mostrarPainel();
   }else{
     alert("Login errado");
   }
 }
 
-/* LOGOUT (opcional) */
+function mostrarPainel(){
+  document.getElementById("login").style.display="none";
+  document.getElementById("panel").style.display="block";
+}
+
+/* LOGOUT */
 function logout(){
   localStorage.removeItem("logado");
   location.reload();
@@ -29,18 +125,14 @@ function logout(){
 
 /* GERAR KEY */
 function gerar(dias){
-  let random = Math.random().toString(36).substring(2,10).toUpperCase();
-  let key = `GAB-${dias}D-${random}`;
 
-  let data = {
-    key: key,
-    expira: Date.now() + dias*86400000
-  };
+  var random = Math.random().toString(36).substring(2,10).toUpperCase();
 
-  let keys = JSON.parse(localStorage.getItem("keys") || "[]");
-  keys.push(data);
-  localStorage.setItem("keys", JSON.stringify(keys));
+  var key = "GAB-" + dias + "D-" + random;
 
   document.getElementById("resultado").innerText = key;
 }
 </script>
+
+</body>
+</html>
