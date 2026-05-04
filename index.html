@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>GBZ XITER</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Inter:wght@300;500&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+    background: radial-gradient(circle,#001018,#000);
+    font-family:'Inter';
+    color:white;
+}
+
+/* CENTER */
+.screen{
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+/* CARD */
+.card{
+    width:90%;
+    max-width:360px;
+    padding:25px;
+    border-radius:20px;
+    background:#0a1118;
+    box-shadow:0 0 40px #00bfff40;
+    border:1px solid #00bfff30;
+    text-align:center;
+}
+
+/* TITLE */
+.title{
+    font-family:'Orbitron';
+    color:#00bfff;
+    font-size:26px;
+}
+
+/* TEXT */
+.sub{
+    font-size:12px;
+    color:#aaa;
+}
+
+/* INPUT */
+.input{
+    margin-top:20px;
+    position:relative;
+}
+.input input{
+    width:100%;
+    padding:14px 14px 14px 40px;
+    border-radius:12px;
+    border:1px solid #00bfff50;
+    background:#05080c;
+    color:white;
+}
+.input::before{
+    content:"🔑";
+    position:absolute;
+    left:12px;
+    top:50%;
+    transform:translateY(-50%);
+}
+
+/* BTN */
+.btn{
+    margin-top:20px;
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:12px;
+    background:linear-gradient(45deg,#00bfff,#0077ff);
+    color:white;
+    font-weight:bold;
+}
+
+/* PANEL */
+.panel{
+    display:none;
+    padding:20px;
+}
+
+/* HEADER */
+.header{
+    text-align:center;
+    font-family:'Orbitron';
+    color:#00bfff;
+}
+
+.status{
+    text-align:center;
+    font-size:12px;
+    color:#00ff88;
+}
+
+/* TABS */
+.tabs{
+    display:flex;
+    justify-content:center;
+    margin-top:15px;
+}
+
+.tabbox{
+    display:flex;
+    background:#0a1118;
+    padding:5px;
+    border-radius:20px;
+}
+
+.tab{
+    padding:8px 14px;
+    font-size:12px;
+    color:#aaa;
+}
+
+.active{
+    background:#00bfff;
+    color:#000;
+    border-radius:15px;
+}
+
+/* BOX */
+.box{
+    margin-top:20px;
+    padding:15px;
+    border-radius:15px;
+    background:#0a1118;
+    box-shadow:0 0 20px #00bfff30;
+}
+
+/* ROW */
+.row{
+    display:flex;
+    justify-content:space-between;
+    margin:12px 0;
+}
+
+/* SWITCH */
+.switch{position:relative;width:40px;height:20px}
+.switch input{display:none}
+
+.slider{
+    position:absolute;
+    width:100%;
+    height:100%;
+    background:#333;
+    border-radius:20px;
+}
+.slider::before{
+    content:"";
+    position:absolute;
+    width:16px;height:16px;
+    background:white;
+    border-radius:50%;
+    top:2px;left:2px;
+    transition:.3s;
+}
+
+input:checked + .slider{
+    background:#00bfff;
+}
+input:checked + .slider::before{
+    transform:translateX(20px);
+}
+
+/* RANGE */
+input[type=range]{width:100%}
+
+/* LOADING */
+.loading{
+    display:none;
+    text-align:center;
+    margin-top:10px;
+}
+.spinner{
+    width:30px;height:30px;
+    border:4px solid #00bfff33;
+    border-top:4px solid #00bfff;
+    border-radius:50%;
+    margin:auto;
+    animation:spin 1s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div class="screen" id="login">
+    <div class="card">
+        <div class="title">GBZ XITER</div>
+        <p class="sub">Ativar Licença</p>
+        <p class="sub">Digite sua chave para continuar</p>
+
+        <div class="input">
+            <input id="key" placeholder="Digite sua chave...">
+        </div>
+
+        <button class="btn" onclick="login()">ATIVAR LICENÇA</button>
+
+        <p class="sub" style="margin-top:10px;">
+            Não possui licença? <span style="color:#00bfff;">Contato</span>
+        </p>
+    </div>
+</div>
+
+<!-- PANEL -->
+<div class="panel" id="panel">
+
+    <div class="header">GBZ XITER</div>
+    <div class="status">● Ativo - 30 dias</div>
+
+    <div class="tabs">
+        <div class="tabbox">
+            <div class="tab active" onclick="tab('f',this)">Funções</div>
+            <div class="tab" onclick="tab('m',this)">Motor</div>
+            <div class="tab" onclick="tab('i',this)">Informações</div>
+        </div>
+    </div>
+
+    <!-- FUNÇÕES -->
+    <div class="box" id="f">
+        <div class="row">Ajuste de Precisão <label class="switch"><input type="checkbox"><span class="slider"></span></label></div>
+        <div class="row">Controle de Sensibilidade <label class="switch"><input type="checkbox"><span class="slider"></span></label></div>
+        <div class="row">Resposta de Toque <label class="switch"><input type="checkbox"><span class="slider"></span></label></div>
+        <div class="row">Estabilidade <label class="switch"><input type="checkbox"><span class="slider"></span></label></div>
+
+        <button class="btn" onclick="start()">INICIAR</button>
+
+        <div class="loading" id="load">
+            <div class="spinner"></div>
+            <p>Iniciando...</p>
+        </div>
+    </div>
+
+    <!-- MOTOR -->
+    <div class="box" id="m" style="display:none;">
+        <p>Fator Linear</p>
+        <input type="range">
+
+        <p>Limiar</p>
+        <input type="range">
+
+        <p>Filtro</p>
+        <input type="range">
+    </div>
+
+    <!-- INFO -->
+    <div class="box" id="i" style="display:none;">
+        <p>Versão: 3.2.1</p>
+        <p>Status: Ativo</p>
+        <p>Validade: 30 dias</p>
+        <p>Servidor: BR</p>
+        <p>Compatível: Android</p>
+    </div>
+
+</div>
+
+<script>
+function login(){
+    let k = document.getElementById("key").value.toLowerCase();
+
+    if(k === "gbzxiter-666"){
+        document.getElementById("login").style.display="none";
+        document.getElementById("panel").style.display="block";
+    } else {
+        alert("Chave inválida");
+    }
+}
+
+function tab(id,el){
+    document.getElementById("f").style.display="none";
+    document.getElementById("m").style.display="none";
+    document.getElementById("i").style.display="none";
+
+    document.getElementById(id).style.display="block";
+
+    document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+    el.classList.add("active");
+}
+
+function start(){
+    document.getElementById("load").style.display="block";
+
+    setTimeout(()=>{
+        document.getElementById("load").style.display="none";
+        alert("Sistema iniciado");
+    },2000);
+}
+</script>
+
+</body>
+</html>
