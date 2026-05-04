@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <title>Admin Keys</title>
@@ -13,7 +13,6 @@ body{
   text-align:center;
 }
 
-/* LOGIN */
 #login{
   margin-top:100px;
 }
@@ -21,17 +20,18 @@ body{
 input{
   padding:10px;
   margin:5px;
+  border:none;
 }
 
 button{
   padding:8px 15px;
   margin:5px;
   background:red;
+  color:#fff;
   border:none;
-  color:white;
+  cursor:pointer;
 }
 
-/* PANEL */
 #panel{
   display:none;
 }
@@ -49,44 +49,42 @@ button{
 
 <!-- LOGIN -->
 <div id="login">
-<h2>Login</h2>
-<input id="user" placeholder="Usuário"><br>
-<input id="pass" type="password" placeholder="Senha"><br>
-<button onclick="login()">Entrar</button>
+  <h2>Login</h2>
+  <input id="user" placeholder="Usuário"><br>
+  <input id="pass" type="password" placeholder="Senha"><br>
+  <button onclick="login()">Entrar</button>
 </div>
 
-<!-- PANEL -->
+<!-- PAINEL -->
 <div id="panel">
+  <h2>Gerador</h2>
 
-<h2>Gerador</h2>
+  <button onclick="gerar(1)">1 Dia</button>
+  <button onclick="gerar(7)">7 Dias</button>
+  <button onclick="gerar(20)">20 Dias</button>
+  <button onclick="gerar(50)">50 Dias</button>
 
-<button onclick="gerar(1)">1D</button>
-<button onclick="gerar(7)">7D</button>
-<button onclick="gerar(20)">20D</button>
-<button onclick="gerar(50)">50D</button>
-
-<h2>Keys</h2>
-<div id="keys"></div>
-
+  <h2>Keys</h2>
+  <div id="keys"></div>
 </div>
 
-<!-- FIREBASE -->
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+<script type="module">
 
-<script>
-// COLOCA SUA CONFIG AQUI
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+/* 🔑 COLE SUA CONFIG DO FIREBASE AQUI */
 const firebaseConfig = {
   apiKey: "SUA_API_KEY",
   authDomain: "SEU_PROJETO.firebaseapp.com",
   projectId: "SEU_PROJETO"
 };
 
-const app = firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 /* LOGIN */
-function login(){
+window.login = function(){
   let u = document.getElementById("user").value;
   let p = document.getElementById("pass").value;
 
@@ -100,12 +98,11 @@ function login(){
 }
 
 /* GERAR KEY */
-function gerar(dias){
+window.gerar = async function(dias){
   let key = "GAB-" + dias + "D-" + Math.random().toString(36).substring(2,10).toUpperCase();
-
   let exp = Date.now() + dias*86400000;
 
-  db.collection("keys").add({
+  await addDoc(collection(db,"keys"),{
     key: key,
     expires: exp,
     active: true,
@@ -118,12 +115,12 @@ function gerar(dias){
 
 /* LISTAR KEYS */
 function carregarKeys(){
-  db.collection("keys").onSnapshot(snapshot => {
+  onSnapshot(collection(db,"keys"), snapshot => {
 
     let html = "";
 
-    snapshot.forEach(doc => {
-      let d = doc.data();
+    snapshot.forEach(docSnap => {
+      let d = docSnap.data();
 
       let status = "Ativa";
       if(d.paused) status = "Pausada";
@@ -134,10 +131,10 @@ function carregarKeys(){
         <b>${d.key}</b><br>
         Status: ${status}<br>
         Expira: ${new Date(d.expires).toLocaleString()}<br>
-        
-        <button onclick="pausar('${doc.id}')">Pausar</button>
-        <button onclick="ativar('${doc.id}')">Ativar</button>
-        <button onclick="deletar('${doc.id}')">Deletar</button>
+
+        <button onclick="pausar('${docSnap.id}')">Pausar</button>
+        <button onclick="ativar('${docSnap.id}')">Ativar</button>
+        <button onclick="deletar('${docSnap.id}')">Deletar</button>
       </div>
       `;
     });
@@ -147,17 +144,18 @@ function carregarKeys(){
 }
 
 /* AÇÕES */
-function pausar(id){
-  db.collection("keys").doc(id).update({paused:true});
+window.pausar = async function(id){
+  await updateDoc(doc(db,"keys",id), {paused:true});
 }
 
-function ativar(id){
-  db.collection("keys").doc(id).update({paused:false});
+window.ativar = async function(id){
+  await updateDoc(doc(db,"keys",id), {paused:false});
 }
 
-function deletar(id){
-  db.collection("keys").doc(id).delete();
+window.deletar = async function(id){
+  await deleteDoc(doc(db,"keys",id));
 }
+
 </script>
 
 </body>
