@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html>
 <head>
 <meta charset="UTF-8">
 <title>Admin Keys</title>
@@ -21,17 +21,14 @@ body{
 input{
   padding:10px;
   margin:5px;
-  border:none;
 }
 
 button{
   padding:8px 15px;
   margin:5px;
   background:red;
-  color:#fff;
   border:none;
-  cursor:pointer;
-  border-radius:5px;
+  color:white;
 }
 
 /* PANEL */
@@ -41,10 +38,9 @@ button{
 
 .key{
   background:#111;
-  margin:10px auto;
-  padding:15px;
+  margin:10px;
+  padding:10px;
   border-radius:10px;
-  width:280px;
 }
 </style>
 </head>
@@ -53,26 +49,41 @@ button{
 
 <!-- LOGIN -->
 <div id="login">
-  <h2>Login</h2>
-  <input id="user" placeholder="Usuário"><br>
-  <input id="pass" type="password" placeholder="Senha"><br>
-  <button onclick="login()">Entrar</button>
+<h2>Login</h2>
+<input id="user" placeholder="Usuário"><br>
+<input id="pass" type="password" placeholder="Senha"><br>
+<button onclick="login()">Entrar</button>
 </div>
 
-<!-- PAINEL -->
+<!-- PANEL -->
 <div id="panel">
-  <h2>Gerador de Keys</h2>
 
-  <button onclick="gerar(1)">1 Dia</button>
-  <button onclick="gerar(7)">7 Dias</button>
-  <button onclick="gerar(20)">20 Dias</button>
-  <button onclick="gerar(50)">50 Dias</button>
+<h2>Gerador</h2>
 
-  <h2>Keys Criadas</h2>
-  <div id="keys"></div>
+<button onclick="gerar(1)">1D</button>
+<button onclick="gerar(7)">7D</button>
+<button onclick="gerar(20)">20D</button>
+<button onclick="gerar(50)">50D</button>
+
+<h2>Keys</h2>
+<div id="keys"></div>
+
 </div>
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
 
 <script>
+// COLOCA SUA CONFIG AQUI
+const firebaseConfig = {
+  apiKey: "SUA_API_KEY",
+  authDomain: "SEU_PROJETO.firebaseapp.com",
+  projectId: "SEU_PROJETO"
+};
+
+const app = firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
 /* LOGIN */
 function login(){
@@ -82,6 +93,7 @@ function login(){
   if(u === "gabriel-12" && p === "040612"){
     document.getElementById("login").style.display="none";
     document.getElementById("panel").style.display="block";
+    carregarKeys();
   }else{
     alert("Login errado");
   }
@@ -89,27 +101,63 @@ function login(){
 
 /* GERAR KEY */
 function gerar(dias){
-
   let key = "GAB-" + dias + "D-" + Math.random().toString(36).substring(2,10).toUpperCase();
 
   let exp = Date.now() + dias*86400000;
 
-  let status = "Ativa";
+  db.collection("keys").add({
+    key: key,
+    expires: exp,
+    active: true,
+    paused: false,
+    device: null
+  });
 
-  let html = `
-    <div class="key">
-      <b>${key}</b><br>
-      Status: ${status}<br>
-      Expira: ${new Date(exp).toLocaleString()}<br><br>
-
-      <button onclick="this.parentElement.remove()">Deletar</button>
-      <button onclick="this.innerText='Pausado'">Pausar</button>
-    </div>
-  `;
-
-  document.getElementById("keys").innerHTML += html;
+  alert("Key criada: " + key);
 }
 
+/* LISTAR KEYS */
+function carregarKeys(){
+  db.collection("keys").onSnapshot(snapshot => {
+
+    let html = "";
+
+    snapshot.forEach(doc => {
+      let d = doc.data();
+
+      let status = "Ativa";
+      if(d.paused) status = "Pausada";
+      if(Date.now() > d.expires) status = "Expirada";
+
+      html += `
+      <div class="key">
+        <b>${d.key}</b><br>
+        Status: ${status}<br>
+        Expira: ${new Date(d.expires).toLocaleString()}<br>
+        
+        <button onclick="pausar('${doc.id}')">Pausar</button>
+        <button onclick="ativar('${doc.id}')">Ativar</button>
+        <button onclick="deletar('${doc.id}')">Deletar</button>
+      </div>
+      `;
+    });
+
+    document.getElementById("keys").innerHTML = html;
+  });
+}
+
+/* AÇÕES */
+function pausar(id){
+  db.collection("keys").doc(id).update({paused:true});
+}
+
+function ativar(id){
+  db.collection("keys").doc(id).update({paused:false});
+}
+
+function deletar(id){
+  db.collection("keys").doc(id).delete();
+}
 </script>
 
 </body>
