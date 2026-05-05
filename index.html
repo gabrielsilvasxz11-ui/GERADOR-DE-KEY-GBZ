@@ -2,34 +2,14 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>GABRIEL STAR ADMIN</title>
+<title>GABRIEL STAR</title>
 
 <style>
-body{
-  margin:0;
-  background:#05070d;
-  color:#fff;
-  font-family:Arial;
-}
+body{margin:0;background:#05070d;color:#fff;font-family:Arial}
+#login{display:flex;justify-content:center;align-items:center;height:100vh}
+.box{background:#0c0f18;padding:30px;border-radius:15px;width:300px;text-align:center}
 
-/* LOGIN */
-#login{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-}
-
-.box{
-  background:#0c0f18;
-  padding:30px;
-  border-radius:15px;
-  width:300px;
-  text-align:center;
-  box-shadow:0 0 30px rgba(0,255,255,0.2);
-}
-
-input, select{
+input,select{
   width:100%;
   padding:10px;
   margin:8px 0;
@@ -47,29 +27,23 @@ button{
 }
 
 /* PANEL */
-#panel{
-  display:none;
-  padding:20px;
-}
+#panel{display:none;height:100vh;display:flex}
+.sidebar{width:200px;background:#0c0f18;padding:20px}
+.content{flex:1;padding:20px}
 
-.card{
-  background:#0c0f18;
-  padding:20px;
-  border-radius:12px;
-  margin-bottom:20px;
-}
-
-.key{color:#00cfff;}
+.card{background:#0c0f18;padding:20px;border-radius:12px;margin-bottom:20px}
 
 .row{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  margin-bottom:8px;
   background:#0a0d14;
   padding:10px;
   border-radius:8px;
+  margin-bottom:5px;
 }
+
+.key{color:#00cfff}
 
 .actions button{
   width:auto;
@@ -94,8 +68,17 @@ button{
 <!-- PANEL -->
 <div id="panel">
 
+<div class="sidebar">
+  <h3>Painel</h3>
+  <p>Keys Ativas: <span id="count">0</span></p>
+</div>
+
+<div class="content">
+
 <div class="card">
-<h3>Gerar Key</h3>
+<h3>Gerar Keys</h3>
+
+<input id="quantidade" placeholder="Quantidade (ex: 10)">
 
 <select id="dias">
   <option value="1">1 dia</option>
@@ -106,109 +89,115 @@ button{
   <option value="99999">Permanente</option>
 </select>
 
-<button onclick="gerar()">GERAR</button>
+<button onclick="gerar()">GERAR KEYS</button>
 </div>
 
 <div class="card">
-<h3>Keys</h3>
+<h3>Lista</h3>
 <div id="lista"></div>
 </div>
 
 </div>
+</div>
 
 <script type="module">
 
-// 🔥 IMPORTS FIREBASE
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// 🔴 COLOCA SUA CONFIG DO FIREBASE AQUI
+// 🔴 COLOCA SUA CONFIG
 const firebaseConfig = {
   apiKey: "AIzaSyDFMv_ZmrVqdgwWO2O-G4hcKFcxi-oxri0",
   authDomain: "gabriel-xiter-fa4b1.firebaseapp.com",
   projectId: "1:532789318640:web:880cf6e95237a182084335"
 };
 
-// 🔥 INICIAR FIREBASE
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// 🔐 LOGIN FIXO
+// LOGIN
 window.login = function(){
-  let u = document.getElementById("user").value;
-  let p = document.getElementById("pass").value;
-
-  if(u === "gabriel-12" && p === "040612"){
-    document.getElementById("login").style.display="none";
-    document.getElementById("panel").style.display="block";
-    carregar();
+  if(user.value==="gabriel-12" && pass.value==="040612"){
+    login.style.display="none";
+    panel.style.display="flex";
+    realtime();
   } else {
-    document.getElementById("msg").innerText="Inválido ❌";
+    msg.innerText="Inválido ❌";
   }
 }
 
-// 🔑 GERAR KEY
+// GERAR VARIAS KEYS
 window.gerar = async function(){
 
+  let qtd = parseInt(document.getElementById("quantidade").value) || 1;
   let dias = parseInt(document.getElementById("dias").value);
 
-  let key = "GABRIEL-" + Math.random().toString(36).substring(2,10).toUpperCase();
+  for(let i=0;i<qtd;i++){
 
-  let exp = Date.now() + (dias * 86400000);
+    let key = "GABRIEL-" + Math.random().toString(36).substring(2,10).toUpperCase();
 
-  await addDoc(collection(db,"keys"),{
-    key: key,
-    expires: exp,
-    paused: false,
-    device: ""
-  });
+    let exp = Date.now() + (dias * 86400000);
 
-  alert("KEY GERADA: " + key);
+    await addDoc(collection(db,"keys"),{
+      key:key,
+      expires:exp,
+      paused:false
+    });
 
-  carregar();
+  }
+
 }
 
-// 📦 LISTAR KEYS
-async function carregar(){
+// TEMPO REAL
+function realtime(){
 
-  let lista = document.getElementById("lista");
-  lista.innerHTML="";
+  const lista = document.getElementById("lista");
 
-  const snap = await getDocs(collection(db,"keys"));
+  onSnapshot(collection(db,"keys"), (snap)=>{
 
-  snap.forEach(d=>{
+    lista.innerHTML="";
+    let count=0;
 
-    let data = d.data();
-    let id = d.id;
+    snap.forEach(d=>{
 
-    let status = data.paused ? "⏸" : "✅";
+      let data = d.data();
+      let id = d.id;
 
-    lista.innerHTML += `
-    <div class="row">
-      <span class="key">${data.key}</span>
-      <span>${new Date(data.expires).toLocaleDateString()}</span>
-      <span>${status}</span>
-      <div class="actions">
-        <button onclick="toggle('${id}',${data.paused})">⏯</button>
-        <button onclick="del('${id}')">🗑</button>
-      </div>
-    </div>
-    `;
+      if(!data.paused) count++;
+
+      lista.innerHTML += `
+      <div class="row">
+        <span class="key">${data.key}</span>
+        <span>${new Date(data.expires).toLocaleDateString()}</span>
+        <div class="actions">
+          <button onclick="copiar('${data.key}')">📋</button>
+          <button onclick="toggle('${id}',${data.paused})">⏯</button>
+          <button onclick="del('${id}')">🗑</button>
+        </div>
+      </div>`;
+    });
+
+    document.getElementById("count").innerText=count;
+
   });
 }
 
-// 🗑 DELETAR
+// COPIAR
+window.copiar = function(key){
+  navigator.clipboard.writeText(key);
+  alert("Copiado: "+key);
+}
+
+// DELETE
 window.del = async function(id){
   await deleteDoc(doc(db,"keys",id));
-  carregar();
 }
 
-// ⏯ PAUSAR / ATIVAR
-window.toggle = async function(id,paused){
+// PAUSE
+window.toggle = async function(id,p){
   await updateDoc(doc(db,"keys",id),{
-    paused: !paused
+    paused:!p
   });
-  carregar();
 }
 
 </script>
