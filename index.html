@@ -6,54 +6,85 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+// 🔥 CONFIG FIREBASE (COLOCA A SUA)
 const firebaseConfig = {
   apiKey: "AIzaSyDFMv_ZmrVqdgwWO2O-G4hcKFcxi-oxri0",
   authDomain: "gabriel-xiter-fa4b1.firebaseapp.com",
-  projectId: "1:532789318640:web:880cf6e95237a182084335"
+  projectId: "1:532789318640:web:880cf6e95237a182084335 "
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-window.login = async function(){
-
+// 🔐 LOGIN FIXO
+window.login = function(){
   const user = document.getElementById("user").value;
   const pass = document.getElementById("pass").value;
   const msg = document.getElementById("msg");
 
-  msg.innerText = "Verificando...";
-
-  const querySnapshot = await getDocs(collection(db, "keys"));
-
-  let ok = false;
-
-  querySnapshot.forEach((doc) => {
-    const data = doc.data();
-
-    if(data.key === user){ // usa campo user como key
-
-      if(data.paused){
-        msg.innerText = "Key pausada ❌";
-        return;
-      }
-
-      if(Date.now() > data.expires){
-        msg.innerText = "Expirada ❌";
-        return;
-      }
-
-      ok = true;
-
-      document.getElementById("login").style.display="none";
-      document.getElementById("panel").style.display="flex";
-    }
-  });
-
-  if(!ok){
+  if(user === "gabriel-12" && pass === "040612"){
+    document.getElementById("login").style.display="none";
+    document.getElementById("panel").style.display="flex";
+    loadKeys();
+  } else {
     msg.innerText = "Inválido ❌";
   }
+}
+
+// 🔑 GERAR KEY
+window.generateKeys = async function(){
+
+  const qtd = document.getElementById("qtd").value;
+  const dias = document.getElementById("dias").value;
+
+  for(let i=0;i<qtd;i++){
+
+    let key = "GABRIEL-" + Math.random().toString(36).substring(2,10).toUpperCase();
+
+    let expires = Date.now() + (dias * 86400000);
+
+    await addDoc(collection(db,"keys"),{
+      key: key,
+      expires: expires,
+      paused: false,
+      device: ""
+    });
+  }
+
+  loadKeys();
+}
+
+// 📦 CARREGAR KEYS
+async function loadKeys(){
+
+  const tabela = document.getElementById("keysTable");
+  tabela.innerHTML = "";
+
+  const querySnapshot = await getDocs(collection(db,"keys"));
+
+  querySnapshot.forEach((docSnap)=>{
+
+    const data = docSnap.data();
+    const id = docSnap.id;
+
+    let dataExp = new Date(data.expires).toLocaleDateString();
+
+    tabela.innerHTML += `
+    <tr>
+      <td class="key">${data.key}</td>
+      <td>revendedor</td>
+      <td>${dataExp}</td>
+      <td><button onclick="delKey('${id}')">🗑</button></td>
+    </tr>`;
+  });
+}
+
+// 🗑 DELETAR
+window.delKey = async function(id){
+  await deleteDoc(doc(db,"keys",id));
+  loadKeys();
 }
 </script>
 
@@ -65,7 +96,6 @@ body{
   color:white;
 }
 
-/* LOGIN */
 #login{
   height:100vh;
   display:flex;
@@ -82,14 +112,7 @@ body{
   text-align:center;
 }
 
-.card h1{
-  letter-spacing:2px;
-}
-
-.sub{
-  color:#888;
-  margin-bottom:20px;
-}
+.sub{color:#888;}
 
 input{
   width:100%;
@@ -103,12 +126,10 @@ input{
 
 button{
   width:100%;
-  padding:14px;
+  padding:12px;
   border:none;
-  border-radius:12px;
+  border-radius:10px;
   background:#00d5ff;
-  color:black;
-  font-weight:bold;
   cursor:pointer;
 }
 
@@ -118,25 +139,17 @@ button{
   height:100vh;
 }
 
-/* SIDEBAR */
 .sidebar{
   width:200px;
   background:#0b0d14;
   padding:20px;
 }
 
-.sidebar p{
-  cursor:pointer;
-  color:#00d5ff;
-}
-
-/* CONTENT */
 .content{
   flex:1;
   padding:20px;
 }
 
-/* CARDS */
 .top{
   display:flex;
   gap:20px;
@@ -149,7 +162,6 @@ button{
   border-radius:15px;
 }
 
-/* GERAR */
 .gen{
   margin-top:20px;
   background:#0b0d14;
@@ -159,19 +171,11 @@ button{
 
 .gen input{
   width:45%;
-  margin-right:5%;
 }
 
-.gen button{
-  width:100%;
-  margin-top:10px;
-}
-
-/* TABLE */
 table{
   width:100%;
   margin-top:20px;
-  border-collapse:collapse;
 }
 
 td{
@@ -183,8 +187,8 @@ td{
   color:#00d5ff;
 }
 </style>
-</head>
 
+</head>
 <body>
 
 <!-- LOGIN -->
@@ -194,11 +198,10 @@ td{
     <h1>GABRIEL STAR</h1>
     <p class="sub">Painel de Controle</p>
 
-    <input id="user" placeholder="Key">
-    <input id="pass" placeholder="Senha (opcional)">
+    <input id="user" placeholder="Usuário">
+    <input id="pass" placeholder="Senha">
 
     <button onclick="login()">ENTRAR NO SISTEMA</button>
-
     <p id="msg"></p>
   </div>
 </div>
@@ -208,7 +211,6 @@ td{
 
 <div class="sidebar">
   <p>Licenças</p>
-  <p>Sair</p>
 </div>
 
 <div class="content">
@@ -216,22 +218,22 @@ td{
 <div class="top">
   <div class="box">
     <p>CRÉDITOS</p>
-    <h2>99972</h2>
+    <h2>∞</h2>
   </div>
 
   <div class="box">
     <p>ATIVAS</p>
-    <h2>6</h2>
+    <h2 id="ativas">--</h2>
   </div>
 </div>
 
 <div class="gen">
   <p>Gerar Licenças</p>
 
-  <input placeholder="Quantas?">
-  <input placeholder="Dias">
+  <input id="qtd" placeholder="Quantas?">
+  <input id="dias" placeholder="Dias">
 
-  <button>EMITIR KEYS</button>
+  <button onclick="generateKeys()">EMITIR KEYS</button>
 </div>
 
 <table>
@@ -239,13 +241,10 @@ td{
 <td>Key</td>
 <td>Origem</td>
 <td>Expira</td>
+<td>Ação</td>
 </tr>
 
-<tr>
-<td class="key">GABRIEL-123</td>
-<td>revendedor</td>
-<td>30/05</td>
-</tr>
+<tbody id="keysTable"></tbody>
 
 </table>
 
