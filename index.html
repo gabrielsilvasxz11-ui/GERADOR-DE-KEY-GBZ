@@ -1,207 +1,92 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Gabriel Star Admin</title>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-// 🔥 CONFIG FIREBASE (COLOCA A SUA)
-const firebaseConfig = {
-  apiKey: "AIzaSyDFMv_ZmrVqdgwWO2O-G4hcKFcxi-oxri0",
-  authDomain: "gabriel-xiter-fa4b1.firebaseapp.com",
-  projectId: "1:532789318640:web:880cf6e95237a182084335 "
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-// 🔐 LOGIN FIXO
-window.login = function(){
-  const user = document.getElementById("user").value;
-  const pass = document.getElementById("pass").value;
-  const msg = document.getElementById("msg");
-
-  if(user === "gabriel-12" && pass === "040612"){
-    document.getElementById("login").style.display="none";
-    document.getElementById("panel").style.display="flex";
-    loadKeys();
-  } else {
-    msg.innerText = "Inválido ❌";
-  }
-}
-
-// 🔑 GERAR KEY
-window.generateKeys = async function(){
-
-  const qtd = document.getElementById("qtd").value;
-  const dias = document.getElementById("dias").value;
-
-  for(let i=0;i<qtd;i++){
-
-    let key = "GABRIEL-" + Math.random().toString(36).substring(2,10).toUpperCase();
-
-    let expires = Date.now() + (dias * 86400000);
-
-    await addDoc(collection(db,"keys"),{
-      key: key,
-      expires: expires,
-      paused: false,
-      device: ""
-    });
-  }
-
-  loadKeys();
-}
-
-// 📦 CARREGAR KEYS
-async function loadKeys(){
-
-  const tabela = document.getElementById("keysTable");
-  tabela.innerHTML = "";
-
-  const querySnapshot = await getDocs(collection(db,"keys"));
-
-  querySnapshot.forEach((docSnap)=>{
-
-    const data = docSnap.data();
-    const id = docSnap.id;
-
-    let dataExp = new Date(data.expires).toLocaleDateString();
-
-    tabela.innerHTML += `
-    <tr>
-      <td class="key">${data.key}</td>
-      <td>revendedor</td>
-      <td>${dataExp}</td>
-      <td><button onclick="delKey('${id}')">🗑</button></td>
-    </tr>`;
-  });
-}
-
-// 🗑 DELETAR
-window.delKey = async function(id){
-  await deleteDoc(doc(db,"keys",id));
-  loadKeys();
-}
-</script>
+<title>GABRIEL STAR ADMIN</title>
 
 <style>
 body{
   margin:0;
-  background:#05060a;
+  background:#05070d;
+  color:#fff;
   font-family:Arial;
-  color:white;
 }
 
+/* LOGIN */
 #login{
-  height:100vh;
   display:flex;
   justify-content:center;
   align-items:center;
+  height:100vh;
 }
 
-.card{
-  width:320px;
+.box{
+  background:#0c0f18;
   padding:30px;
-  border-radius:20px;
-  background:#0b0d14;
-  box-shadow:0 0 40px rgba(0,255,255,0.1);
+  border-radius:15px;
+  width:300px;
   text-align:center;
+  box-shadow:0 0 30px rgba(0,255,255,0.2);
 }
 
-.sub{color:#888;}
-
-input{
+input, select{
   width:100%;
-  padding:14px;
-  margin:10px 0;
+  padding:10px;
+  margin:8px 0;
   border:none;
-  border-radius:12px;
-  background:#0f1118;
-  color:white;
+  border-radius:8px;
 }
 
 button{
-  width:100%;
-  padding:12px;
+  padding:10px;
   border:none;
-  border-radius:10px;
-  background:#00d5ff;
+  border-radius:8px;
+  background:#00cfff;
   cursor:pointer;
+  width:100%;
 }
 
 /* PANEL */
 #panel{
   display:none;
-  height:100vh;
-}
-
-.sidebar{
-  width:200px;
-  background:#0b0d14;
   padding:20px;
 }
 
-.content{
-  flex:1;
+.card{
+  background:#0c0f18;
   padding:20px;
+  border-radius:12px;
+  margin-bottom:20px;
 }
 
-.top{
+.key{color:#00cfff;}
+
+.row{
   display:flex;
-  gap:20px;
-}
-
-.box{
-  flex:1;
-  background:#0b0d14;
-  padding:20px;
-  border-radius:15px;
-}
-
-.gen{
-  margin-top:20px;
-  background:#0b0d14;
-  padding:20px;
-  border-radius:15px;
-}
-
-.gen input{
-  width:45%;
-}
-
-table{
-  width:100%;
-  margin-top:20px;
-}
-
-td{
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:8px;
+  background:#0a0d14;
   padding:10px;
-  border-bottom:1px solid #222;
+  border-radius:8px;
 }
 
-.key{
-  color:#00d5ff;
+.actions button{
+  width:auto;
+  margin-left:5px;
 }
 </style>
-
 </head>
+
 <body>
 
 <!-- LOGIN -->
 <div id="login">
-  <div class="card">
-    <div style="font-size:40px">👻</div>
-    <h1>GABRIEL STAR</h1>
-    <p class="sub">Painel de Controle</p>
-
+  <div class="box">
+    <h2>GABRIEL STAR</h2>
     <input id="user" placeholder="Usuário">
-    <input id="pass" placeholder="Senha">
-
-    <button onclick="login()">ENTRAR NO SISTEMA</button>
+    <input id="pass" type="password" placeholder="Senha">
+    <button onclick="login()">Entrar</button>
     <p id="msg"></p>
   </div>
 </div>
@@ -209,47 +94,124 @@ td{
 <!-- PANEL -->
 <div id="panel">
 
-<div class="sidebar">
-  <p>Licenças</p>
+<div class="card">
+<h3>Gerar Key</h3>
+
+<select id="dias">
+  <option value="1">1 dia</option>
+  <option value="7">7 dias</option>
+  <option value="15">15 dias</option>
+  <option value="30">30 dias</option>
+  <option value="50">50 dias</option>
+  <option value="99999">Permanente</option>
+</select>
+
+<button onclick="gerar()">GERAR</button>
 </div>
 
-<div class="content">
-
-<div class="top">
-  <div class="box">
-    <p>CRÉDITOS</p>
-    <h2>∞</h2>
-  </div>
-
-  <div class="box">
-    <p>ATIVAS</p>
-    <h2 id="ativas">--</h2>
-  </div>
+<div class="card">
+<h3>Keys</h3>
+<div id="lista"></div>
 </div>
 
-<div class="gen">
-  <p>Gerar Licenças</p>
-
-  <input id="qtd" placeholder="Quantas?">
-  <input id="dias" placeholder="Dias">
-
-  <button onclick="generateKeys()">EMITIR KEYS</button>
 </div>
 
-<table>
-<tr>
-<td>Key</td>
-<td>Origem</td>
-<td>Expira</td>
-<td>Ação</td>
-</tr>
+<script type="module">
 
-<tbody id="keysTable"></tbody>
+// 🔥 IMPORTS FIREBASE
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-</table>
+// 🔴 COLOCA SUA CONFIG DO FIREBASE AQUI
+const firebaseConfig = {
+  apiKey: "AIzaSyDFMv_ZmrVqdgwWO2O-G4hcKFcxi-oxri0",
+  authDomain: "gabriel-xiter-fa4b1.firebaseapp.com",
+  projectId: "1:532789318640:web:880cf6e95237a182084335"
+};
 
-</div>
-</div>
+// 🔥 INICIAR FIREBASE
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// 🔐 LOGIN FIXO
+window.login = function(){
+  let u = document.getElementById("user").value;
+  let p = document.getElementById("pass").value;
+
+  if(u === "gabriel-12" && p === "040612"){
+    document.getElementById("login").style.display="none";
+    document.getElementById("panel").style.display="block";
+    carregar();
+  } else {
+    document.getElementById("msg").innerText="Inválido ❌";
+  }
+}
+
+// 🔑 GERAR KEY
+window.gerar = async function(){
+
+  let dias = parseInt(document.getElementById("dias").value);
+
+  let key = "GABRIEL-" + Math.random().toString(36).substring(2,10).toUpperCase();
+
+  let exp = Date.now() + (dias * 86400000);
+
+  await addDoc(collection(db,"keys"),{
+    key: key,
+    expires: exp,
+    paused: false,
+    device: ""
+  });
+
+  alert("KEY GERADA: " + key);
+
+  carregar();
+}
+
+// 📦 LISTAR KEYS
+async function carregar(){
+
+  let lista = document.getElementById("lista");
+  lista.innerHTML="";
+
+  const snap = await getDocs(collection(db,"keys"));
+
+  snap.forEach(d=>{
+
+    let data = d.data();
+    let id = d.id;
+
+    let status = data.paused ? "⏸" : "✅";
+
+    lista.innerHTML += `
+    <div class="row">
+      <span class="key">${data.key}</span>
+      <span>${new Date(data.expires).toLocaleDateString()}</span>
+      <span>${status}</span>
+      <div class="actions">
+        <button onclick="toggle('${id}',${data.paused})">⏯</button>
+        <button onclick="del('${id}')">🗑</button>
+      </div>
+    </div>
+    `;
+  });
+}
+
+// 🗑 DELETAR
+window.del = async function(id){
+  await deleteDoc(doc(db,"keys",id));
+  carregar();
+}
+
+// ⏯ PAUSAR / ATIVAR
+window.toggle = async function(id,paused){
+  await updateDoc(doc(db,"keys",id),{
+    paused: !paused
+  });
+  carregar();
+}
+
+</script>
 
 </body>
 </html>
