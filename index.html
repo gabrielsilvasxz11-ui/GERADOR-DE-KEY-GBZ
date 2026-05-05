@@ -2,43 +2,185 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>GABRIEL STAR - Admin Keys</title>
+<title>Gabriel Star Admin</title>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDFMv_ZmrVqdgwWO2O-G4hcKFcxi-oxri0",
+  authDomain: "gabriel-xiter-fa4b1.firebaseapp.com",
+  projectId: "1:532789318640:web:880cf6e95237a182084335"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+window.login = async function(){
+
+  const user = document.getElementById("user").value;
+  const pass = document.getElementById("pass").value;
+  const msg = document.getElementById("msg");
+
+  msg.innerText = "Verificando...";
+
+  const querySnapshot = await getDocs(collection(db, "keys"));
+
+  let ok = false;
+
+  querySnapshot.forEach((doc) => {
+    const data = doc.data();
+
+    if(data.key === user){ // usa campo user como key
+
+      if(data.paused){
+        msg.innerText = "Key pausada ❌";
+        return;
+      }
+
+      if(Date.now() > data.expires){
+        msg.innerText = "Expirada ❌";
+        return;
+      }
+
+      ok = true;
+
+      document.getElementById("login").style.display="none";
+      document.getElementById("panel").style.display="flex";
+    }
+  });
+
+  if(!ok){
+    msg.innerText = "Inválido ❌";
+  }
+}
+</script>
 
 <style>
 body{
   margin:0;
+  background:#05060a;
   font-family:Arial;
-  background:#000;
-  color:#fff;
+  color:white;
+}
+
+/* LOGIN */
+#login{
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.card{
+  width:320px;
+  padding:30px;
+  border-radius:20px;
+  background:#0b0d14;
+  box-shadow:0 0 40px rgba(0,255,255,0.1);
   text-align:center;
 }
 
-#login{ margin-top:100px; }
+.card h1{
+  letter-spacing:2px;
+}
+
+.sub{
+  color:#888;
+  margin-bottom:20px;
+}
 
 input{
-  padding:10px;
-  margin:5px;
+  width:100%;
+  padding:14px;
+  margin:10px 0;
   border:none;
+  border-radius:12px;
+  background:#0f1118;
+  color:white;
 }
 
 button{
-  padding:8px 15px;
-  margin:5px;
-  background:red;
-  color:#fff;
+  width:100%;
+  padding:14px;
   border:none;
+  border-radius:12px;
+  background:#00d5ff;
+  color:black;
+  font-weight:bold;
   cursor:pointer;
-  border-radius:5px;
 }
 
-#panel{ display:none; }
+/* PANEL */
+#panel{
+  display:none;
+  height:100vh;
+}
+
+/* SIDEBAR */
+.sidebar{
+  width:200px;
+  background:#0b0d14;
+  padding:20px;
+}
+
+.sidebar p{
+  cursor:pointer;
+  color:#00d5ff;
+}
+
+/* CONTENT */
+.content{
+  flex:1;
+  padding:20px;
+}
+
+/* CARDS */
+.top{
+  display:flex;
+  gap:20px;
+}
+
+.box{
+  flex:1;
+  background:#0b0d14;
+  padding:20px;
+  border-radius:15px;
+}
+
+/* GERAR */
+.gen{
+  margin-top:20px;
+  background:#0b0d14;
+  padding:20px;
+  border-radius:15px;
+}
+
+.gen input{
+  width:45%;
+  margin-right:5%;
+}
+
+.gen button{
+  width:100%;
+  margin-top:10px;
+}
+
+/* TABLE */
+table{
+  width:100%;
+  margin-top:20px;
+  border-collapse:collapse;
+}
+
+td{
+  padding:10px;
+  border-bottom:1px solid #222;
+}
 
 .key{
-  background:#111;
-  margin:10px auto;
-  padding:15px;
-  border-radius:10px;
-  width:280px;
+  color:#00d5ff;
 }
 </style>
 </head>
@@ -47,112 +189,68 @@ button{
 
 <!-- LOGIN -->
 <div id="login">
-  <h2>GABRIEL STAR</h2>
-  <input id="user" placeholder="Usuário"><br>
-  <input id="pass" type="password" placeholder="Senha"><br>
-  <button onclick="login()">Entrar</button>
+  <div class="card">
+    <div style="font-size:40px">👻</div>
+    <h1>GABRIEL STAR</h1>
+    <p class="sub">Painel de Controle</p>
+
+    <input id="user" placeholder="Key">
+    <input id="pass" placeholder="Senha (opcional)">
+
+    <button onclick="login()">ENTRAR NO SISTEMA</button>
+
+    <p id="msg"></p>
+  </div>
 </div>
 
-<!-- PAINEL -->
+<!-- PANEL -->
 <div id="panel">
-  <h2>Gerador de Keys</h2>
 
-  <button onclick="gerar(1)">1 Dia</button>
-  <button onclick="gerar(7)">7 Dias</button>
-  <button onclick="gerar(30)">30 Dias</button>
-
-  <h2>Keys</h2>
-  <div id="keys"></div>
+<div class="sidebar">
+  <p>Licenças</p>
+  <p>Sair</p>
 </div>
 
-<!-- FIREBASE -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc } 
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+<div class="content">
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDFMv_ZmrVqdgwWO2O-G4hcKFcxi-oxri0",
-  authDomain: "gabriel-xiter.firebaseapp.com",
-  projectId: "gabriel-xiter",
-  storageBucket: "gabriel-xiter.appspot.com",
-  messagingSenderId: "593212348463",
-  appId: "1:532789318640:web:880cf6e95237a182084335"
-};
+<div class="top">
+  <div class="box">
+    <p>CRÉDITOS</p>
+    <h2>99972</h2>
+  </div>
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+  <div class="box">
+    <p>ATIVAS</p>
+    <h2>6</h2>
+  </div>
+</div>
 
-/* LOGIN */
-window.login = function(){
-  let u = document.getElementById("user").value;
-  let p = document.getElementById("pass").value;
+<div class="gen">
+  <p>Gerar Licenças</p>
 
-  if(u === "gabriel-12" && p === "040612"){
-    document.getElementById("login").style.display="none";
-    document.getElementById("panel").style.display="block";
-    carregarKeys();
-  }else{
-    alert("Login errado");
-  }
-}
+  <input placeholder="Quantas?">
+  <input placeholder="Dias">
 
-/* GERAR KEY */
-window.gerar = async function(dias){
+  <button>EMITIR KEYS</button>
+</div>
 
-  let key = "GAB-" + dias + "D-" + Math.random().toString(36).substring(2,10).toUpperCase();
-  let exp = Date.now() + dias*86400000;
+<table>
+<tr>
+<td>Key</td>
+<td>Origem</td>
+<td>Expira</td>
+</tr>
 
-  await addDoc(collection(db, "keys"), {
-    key: key,
-    expires: exp,
-    paused: false
-  });
+<tr>
+<td class="key">GABRIEL-123</td>
+<td>revendedor</td>
+<td>30/05</td>
+</tr>
 
-  carregarKeys();
-}
+</table>
 
-/* CARREGAR KEYS */
-async function carregarKeys(){
-  let div = document.getElementById("keys");
-  div.innerHTML = "";
-
-  const querySnapshot = await getDocs(collection(db, "keys"));
-
-  querySnapshot.forEach((docSnap) => {
-    let data = docSnap.data();
-
-    let html = `
-    <div class="key">
-      <b>${data.key}</b><br>
-      Status: ${data.paused ? "Pausado" : "Ativo"}<br>
-      Expira: ${new Date(data.expires).toLocaleString()}<br><br>
-
-      <button onclick="deletar('${docSnap.id}')">Deletar</button>
-      <button onclick="pausar('${docSnap.id}', ${data.paused})">
-        ${data.paused ? "Despausar" : "Pausar"}
-      </button>
-    </div>
-    `;
-
-    div.innerHTML += html;
-  });
-}
-
-/* DELETAR */
-window.deletar = async function(id){
-  await deleteDoc(doc(db, "keys", id));
-  carregarKeys();
-}
-
-/* PAUSAR */
-window.pausar = async function(id, status){
-  await updateDoc(doc(db, "keys", id), {
-    paused: !status
-  });
-  carregarKeys();
-}
-</script>
+</div>
+</div>
 
 </body>
 </html>
