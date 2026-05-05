@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Admin Keys</title>
+<title>GABRIEL STAR - Admin Keys</title>
 
 <style>
 body{
@@ -13,9 +13,7 @@ body{
   text-align:center;
 }
 
-#login{
-  margin-top:100px;
-}
+#login{ margin-top:100px; }
 
 input{
   padding:10px;
@@ -30,17 +28,17 @@ button{
   color:#fff;
   border:none;
   cursor:pointer;
+  border-radius:5px;
 }
 
-#panel{
-  display:none;
-}
+#panel{ display:none; }
 
 .key{
   background:#111;
-  margin:10px;
-  padding:10px;
+  margin:10px auto;
+  padding:15px;
   border-radius:10px;
+  width:280px;
 }
 </style>
 </head>
@@ -49,7 +47,7 @@ button{
 
 <!-- LOGIN -->
 <div id="login">
-  <h2>Login</h2>
+  <h2>GABRIEL STAR</h2>
   <input id="user" placeholder="Usuário"><br>
   <input id="pass" type="password" placeholder="Senha"><br>
   <button onclick="login()">Entrar</button>
@@ -57,27 +55,29 @@ button{
 
 <!-- PAINEL -->
 <div id="panel">
-  <h2>Gerador</h2>
+  <h2>Gerador de Keys</h2>
 
   <button onclick="gerar(1)">1 Dia</button>
   <button onclick="gerar(7)">7 Dias</button>
-  <button onclick="gerar(20)">20 Dias</button>
-  <button onclick="gerar(50)">50 Dias</button>
+  <button onclick="gerar(30)">30 Dias</button>
 
   <h2>Keys</h2>
   <div id="keys"></div>
 </div>
 
+<!-- FIREBASE -->
 <script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-/* 🔑 COLE SUA CONFIG DO FIREBASE AQUI */
 const firebaseConfig = {
-  apiKey: "AIzaSyCION6HiITfm5U5ynTldboq-srSsihs9Mc",
+  apiKey: "AIzaSyDFMv_ZmrVqdgwWO2O-G4hcKFcxi-oxri0",
   authDomain: "gabriel-xiter.firebaseapp.com",
-  projectId: "gabriel-xiter"
+  projectId: "gabriel-xiter",
+  storageBucket: "gabriel-xiter.appspot.com",
+  messagingSenderId: "593212348463",
+  appId: "1:532789318640:web:880cf6e95237a182084335"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -99,63 +99,59 @@ window.login = function(){
 
 /* GERAR KEY */
 window.gerar = async function(dias){
+
   let key = "GAB-" + dias + "D-" + Math.random().toString(36).substring(2,10).toUpperCase();
   let exp = Date.now() + dias*86400000;
 
-  await addDoc(collection(db,"keys"),{
+  await addDoc(collection(db, "keys"), {
     key: key,
     expires: exp,
-    active: true,
-    paused: false,
-    device: null
+    paused: false
   });
 
-  alert("Key criada: " + key);
+  carregarKeys();
 }
 
-/* LISTAR KEYS */
-function carregarKeys(){
-  onSnapshot(collection(db,"keys"), snapshot => {
+/* CARREGAR KEYS */
+async function carregarKeys(){
+  let div = document.getElementById("keys");
+  div.innerHTML = "";
 
-    let html = "";
+  const querySnapshot = await getDocs(collection(db, "keys"));
 
-    snapshot.forEach(docSnap => {
-      let d = docSnap.data();
+  querySnapshot.forEach((docSnap) => {
+    let data = docSnap.data();
 
-      let status = "Ativa";
-      if(d.paused) status = "Pausada";
-      if(Date.now() > d.expires) status = "Expirada";
+    let html = `
+    <div class="key">
+      <b>${data.key}</b><br>
+      Status: ${data.paused ? "Pausado" : "Ativo"}<br>
+      Expira: ${new Date(data.expires).toLocaleString()}<br><br>
 
-      html += `
-      <div class="key">
-        <b>${d.key}</b><br>
-        Status: ${status}<br>
-        Expira: ${new Date(d.expires).toLocaleString()}<br>
+      <button onclick="deletar('${docSnap.id}')">Deletar</button>
+      <button onclick="pausar('${docSnap.id}', ${data.paused})">
+        ${data.paused ? "Despausar" : "Pausar"}
+      </button>
+    </div>
+    `;
 
-        <button onclick="pausar('${docSnap.id}')">Pausar</button>
-        <button onclick="ativar('${docSnap.id}')">Ativar</button>
-        <button onclick="deletar('${docSnap.id}')">Deletar</button>
-      </div>
-      `;
-    });
-
-    document.getElementById("keys").innerHTML = html;
+    div.innerHTML += html;
   });
 }
 
-/* AÇÕES */
-window.pausar = async function(id){
-  await updateDoc(doc(db,"keys",id), {paused:true});
-}
-
-window.ativar = async function(id){
-  await updateDoc(doc(db,"keys",id), {paused:false});
-}
-
+/* DELETAR */
 window.deletar = async function(id){
-  await deleteDoc(doc(db,"keys",id));
+  await deleteDoc(doc(db, "keys", id));
+  carregarKeys();
 }
 
+/* PAUSAR */
+window.pausar = async function(id, status){
+  await updateDoc(doc(db, "keys", id), {
+    paused: !status
+  });
+  carregarKeys();
+}
 </script>
 
 </body>
