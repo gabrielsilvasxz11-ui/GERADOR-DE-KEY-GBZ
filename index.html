@@ -8,50 +8,18 @@
 body{margin:0;background:#05070d;color:#fff;font-family:Arial}
 #login{display:flex;justify-content:center;align-items:center;height:100vh}
 .box{background:#0c0f18;padding:30px;border-radius:15px;width:300px;text-align:center}
-
-input,select{
-  width:100%;
-  padding:10px;
-  margin:8px 0;
-  border:none;
-  border-radius:8px;
-}
-
-button{
-  padding:10px;
-  border:none;
-  border-radius:8px;
-  background:#00cfff;
-  cursor:pointer;
-  width:100%;
-}
-
-/* PANEL */
+input,select{width:100%;padding:10px;margin:8px 0;border:none;border-radius:8px}
+button{padding:10px;border:none;border-radius:8px;background:#00cfff;cursor:pointer;width:100%}
 #panel{display:none;height:100vh;display:flex}
 .sidebar{width:200px;background:#0c0f18;padding:20px}
 .content{flex:1;padding:20px}
-
 .card{background:#0c0f18;padding:20px;border-radius:12px;margin-bottom:20px}
-
-.row{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  background:#0a0d14;
-  padding:10px;
-  border-radius:8px;
-  margin-bottom:5px;
-}
-
+.row{display:flex;justify-content:space-between;background:#0a0d14;padding:10px;border-radius:8px;margin-bottom:5px}
 .key{color:#00cfff}
-
-.actions button{
-  width:auto;
-  margin-left:5px;
-}
+.actions button{width:auto;margin-left:5px}
 </style>
-</head>
 
+</head>
 <body>
 
 <!-- LOGIN -->
@@ -65,12 +33,12 @@ button{
   </div>
 </div>
 
-<!-- PANEL -->
+<!-- PAINEL -->
 <div id="panel">
 
 <div class="sidebar">
   <h3>Painel</h3>
-  <p>Keys Ativas: <span id="count">0</span></p>
+  <p>Ativas: <span id="count">0</span></p>
 </div>
 
 <div class="content">
@@ -78,7 +46,7 @@ button{
 <div class="card">
 <h3>Gerar Keys</h3>
 
-<input id="quantidade" placeholder="Quantidade (ex: 10)">
+<input id="qtd" placeholder="Quantidade (ex: 5)">
 
 <select id="dias">
   <option value="1">1 dia</option>
@@ -89,7 +57,7 @@ button{
   <option value="99999">Permanente</option>
 </select>
 
-<button onclick="gerar()">GERAR KEYS</button>
+<button onclick="gerar()">GERAR</button>
 </div>
 
 <div class="card">
@@ -105,10 +73,10 @@ button{
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// 🔴 COLOCA SUA CONFIG
+// 🔥 COLE SUA CONFIG AQUI
 const firebaseConfig = {
   apiKey: "AIzaSyDFMv_ZmrVqdgwWO2O-G4hcKFcxi-oxri0",
-  authDomain: "gabriel-xiter-fa4b1.firebaseapp.com",
+  authDomain: "gabriel-xiter-fa4b1.firebaseapp.com", projectId",
   projectId: "1:532789318640:web:880cf6e95237a182084335"
 };
 
@@ -117,19 +85,22 @@ const db = getFirestore(app);
 
 // LOGIN
 window.login = function(){
-  if(user.value==="gabriel-12" && pass.value==="040612"){
-    login.style.display="none";
-    panel.style.display="flex";
-    realtime();
+  const u = document.getElementById("user").value;
+  const p = document.getElementById("pass").value;
+
+  if(u === "gabriel-12" && p === "040612"){
+    document.getElementById("login").style.display="none";
+    document.getElementById("panel").style.display="flex";
+    iniciarTempoReal();
   } else {
-    msg.innerText="Inválido ❌";
+    document.getElementById("msg").innerText="Inválido ❌";
   }
 }
 
-// GERAR VARIAS KEYS
+// GERAR KEYS
 window.gerar = async function(){
 
-  let qtd = parseInt(document.getElementById("quantidade").value) || 1;
+  let qtd = parseInt(document.getElementById("qtd").value) || 1;
   let dias = parseInt(document.getElementById("dias").value);
 
   for(let i=0;i<qtd;i++){
@@ -143,13 +114,11 @@ window.gerar = async function(){
       expires:exp,
       paused:false
     });
-
   }
-
 }
 
 // TEMPO REAL
-function realtime(){
+function iniciarTempoReal(){
 
   const lista = document.getElementById("lista");
 
@@ -178,14 +147,12 @@ function realtime(){
     });
 
     document.getElementById("count").innerText=count;
-
   });
 }
 
 // COPIAR
 window.copiar = function(key){
   navigator.clipboard.writeText(key);
-  alert("Copiado: "+key);
 }
 
 // DELETE
@@ -193,10 +160,10 @@ window.del = async function(id){
   await deleteDoc(doc(db,"keys",id));
 }
 
-// PAUSE
+// PAUSAR
 window.toggle = async function(id,p){
   await updateDoc(doc(db,"keys",id),{
-    paused:!p
+    paused: !p
   });
 }
 
